@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>3D Target Distance and Phone Ray Distance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 850px; margin: 24px auto; padding: 0 16px; }
+    label { display: block; margin: 10px 0 4px; font-weight: 600; }
+    input, select, button { font: inherit; padding: 8px; width: 100%; box-sizing: border-box; }
+    button { margin-top: 16px; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .card { border: 1px solid #ccc; border-radius: 8px; padding: 14px; margin-top: 16px; }
+    .value { font-size: 1.4rem; font-weight: 700; }
+    .muted { color: #555; }
+    .warn { color: #9a5b00; font-weight: 600; }
+    code { background: #eee; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>3D Target Distance and Smartphone Ray Distance</h1>
+
+  <div class="card">
+    <h2>Target configuration</h2>
+
+    <div class="grid">
+      <div>
+        <label for="targetLat">Target latitude</label>
+        <input id="targetLat" type="number" step="any" value="48.174407212691555">
+      </div>
+
+      <div>
+        <label for="targetLon">Target longitude</label>
+        <input id="targetLon" type="number" step="any" value="11.553772632411054">
+      </div>
+
+      <div>
+        <label for="targetAlt">Target altitude, meters</label>
+        <input id="targetAlt" type="number" step="any" value="810">
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label for="fallbackAlt">Fallback current altitude if browser gives none, meters</label>
+        <input id="fallbackAlt" type="number" step="any" value="520">
+      </div>
+
+      <div>
+        <label for="fallbackAltAcc">Fallback altitude accuracy if browser gives none, meters</label>
+        <input id="fallbackAltAcc" type="number" step="any" value="30">
+      </div>
+
+      <div>
+        <label for="orientationError">Assumed orientation error, degrees</label>
+        <input id="orientationError" type="number" step="any" value="15">
+      </div>
+    </div>
+
+    <label for="rayAxis">Ray direction fixed to phone</label>
+    <select id="rayAxis">
+      <option value="screen" selected>screen / front-camera side, +z, out of the screen</option>
+      <option value="rearCamera">rear-camera side, -z</option>
+      <option value="top">top edge of phone, +y</option>
+    </select>
+
+    <button id="start">Start location and orientation</button>
+    <p id="status" class="muted">Not started.</p>
+  </div>
+
+  <div class="card">
+    <h2>Results</h2>
+    <p>3D distance to target:</p>
+    <p class="value" id="distance3d">—</p>
+
+    <p>Closest distance between phone ray and target:</p>
+    <p class="value" id="rayDistance">—</p>
+
+    <p id="rayNote" class="muted">—</p>
+    <p id="precision" class="muted">—</p>
+  </div>
+
+  <div class="card">
+    <h2>Raw / diagnostic data</h2>
+    <pre id="debug">—</pre>
+  </div>
+
+<script>
+(() => {
+  const R_EARTH = 6371008.8; // mean Earth radius in meters
+
+  const state = {
+    position: null,
+    orientation: null
+  };
+
+  const el = id => document.getElementById(id);
+  const degToRad = d => d * Math.PI / 180;
+  const radToDeg = r => r * 180 / Math.PI;
+
+  function fmt(x, digits = 1) {
+    return Number.isFinite(x) ? x.toFixed(digits) : "n/a";
+  }
+
+  function norm3(v) {
+    return Math.hypot(v.e, v.n, v.u);
+  }
+
+  function dot(a, b) {
+    return a.e * b.e + a.n * b.n + a.u * b.u;
+  }
+
+  function normalize(v) {
+    const m = norm3(v);
+    return m > 0 ? { e: v.e / m, n: v.n / m, u: v.u / m } : { e: 0, n: 0, u: 0 };
+  }
+
+  function sub(a, b) {
+    return { e: a.e - b.e, n: a.n - b.n, u: a.u - b.u };
+  }
+
+  function scale(v, s) {
+    return { e: v.e * s, n: v.n * s, u: v.u * s };
+  }
+
+  // Local tangent approximation:
+  // east/north/up vector from current location to target.
+  // Accurate enough for nearby destinations; for very long distances use ECEF instead.
+  function targetVectorENU(currentLat, currentLon, currentAlt, targetLat, targetLon, targetAlt) {
+    const lat1 = degToRad(currentLat);
+    const lat2 = degToRad(targetLat);
+    const dLat = lat2 - lat1;
+    const dLon = degToRad(targetLon - currentLon);
+    const avgLat = (lat1 + lat2) / 2;
+
+    return {
+      e: dLon * Math.cos(avgLat) * R_EARTH,
+      n: dLat * R_EARTH,
+      u: targetAlt - currentAlt
+    };
+  }
+
+  function bearingDegFromENU(v) {
+    const bearing = radToDeg(Math.atan2(v.e, v.n));
+    return (bearing + 360) % 360;
+  }
+
+  function elevationDegFromENU(v) {
+    const m = norm3(v);
+    return m > 0 ? radToDeg(Math.asin(v.u / m)) : NaN;
+  }
+
+  // Rotation matrix for DeviceOrientation alpha/beta/gamma.
+  // Matrix columns are the phone's device axes expressed as ENU:
+  // x = right side of screen, y = top of screen, z = out of screen.
+  function rotationMatrixFromDeviceOrientation(alphaDeg, betaDeg, gammaDeg) {
+    const z = degToRad(alphaDeg || 0);
+    const x = degToRad(betaDeg || 0);
+    const y = degToRad(gammaDeg || 0);
+
+    const cX = Math.cos(x), cY = Math.cos(y), cZ = Math.cos(z);
+    const sX = Math.sin(x), sY = Math.sin(y), sZ = Math.sin(z);
+
+    return [
+      [cZ * cY - sZ * sX * sY,  -cX * sZ,  cY * sZ * sX + cZ * sY],
+      [cY * sZ + cZ * sX * sY,   cZ * cX,  sZ * sY - cZ * cY * sX],
+      [-cX * sY,                  sX,       cX * cY]
+    ];
+  }
+
+  function phoneRayDirectionENU(orientation, axisChoice) {
+    const M = rotationMatrixFromDeviceOrientation(
+      orientation.alpha,
+      orientation.beta,
+      orientation.gamma
+    );
+
+    // Columns of M:
+    const xAxis = { e: M[0][0], n: M[1][0], u: M[2][0] };
+    const yAxis = { e: M[0][1], n: M[1][1], u: M[2][1] };
+    const zAxis = { e: M[0][2], n: M[1][2], u: M[2][2] };
+
+    if (axisChoice === "rearCamera") return normalize(scale(zAxis, -1));
+    if (axisChoice === "top") return normalize(yAxis);
+    return normalize(zAxis); // screen / front-camera side
+  }
+
+  function pointToRayDistance(point, rayUnit) {
+    const t = dot(point, rayUnit);
+
+    // If closest point on infinite line is behind ray origin, closest point
+    // on ray is the phone itself. This matches "points away from the target".
+    if (t <= 0) {
+      return { distance: norm3(point), alongRayMeters: t, targetInFront: false };
+    }
+
+    const closest = scale(rayUnit, t);
+    return {
+      distance: norm3(sub(point, closest)),
+      alongRayMeters: t,
+      targetInFront: true
+    };
+  }
+
+  function readNumber(id) {
+    const v = parseFloat(el(id).value);
+    return Number.isFinite(v) ? v : NaN;
+  }
+
+  function update() {
+    const p = state.position;
+    const o = state.orientation;
+
+    if (!p) {
+      return;
+    }
+
+    const c = p.coords;
+
+    const targetLat = readNumber("targetLat");
+    const targetLon = readNumber("targetLon");
+    const targetAlt = readNumber("targetAlt");
+
+    const browserAltAvailable = Number.isFinite(c.altitude);
+    const currentAlt = browserAltAvailable ? c.altitude : readNumber("fallbackAlt");
+
+    const target = targetVectorENU(
+      c.latitude,
+      c.longitude,
+      currentAlt,
+      targetLat,
+      targetLon,
+      targetAlt
+    );
+
+    const distance3d = norm3(target);
+    const targetBearing = bearingDegFromENU(target);
+    const targetElevation = elevationDegFromENU(target);
+
+    el("distance3d").textContent = `${fmt(distance3d)} m`;
+
+    const horizontalAcc = Number.isFinite(c.accuracy) ? c.accuracy : NaN;
+    const altitudeAcc = Number.isFinite(c.altitudeAccuracy)
+      ? c.altitudeAccuracy
+      : readNumber("fallbackAltAcc");
+
+    const positionUncertainty95 = Math.hypot(
+      Number.isFinite(horizontalAcc) ? horizontalAcc : 0,
+      Number.isFinite(altitudeAcc) ? altitudeAcc : 0
+    );
+
+    let rayText = "waiting for orientation";
+    let rayNote = "Move the phone slightly after pressing Start if orientation does not update.";
+    let rayPrecisionText = "";
+
+    if (o) {
+      const ray = phoneRayDirectionENU(o, el("rayAxis").value);
+      const rayResult = pointToRayDistance(target, ray);
+
+      const rayBearing = bearingDegFromENU(ray);
+      const rayElevation = elevationDegFromENU(ray);
+
+      el("rayDistance").textContent = `${fmt(rayResult.distance)} m`;
+
+      rayNote =
+        `Closest point is ${fmt(rayResult.alongRayMeters)} m along the ray. ` +
+        (rayResult.targetInFront
+          ? "The target is in front of the ray origin."
+          : "The target is behind the ray origin, so ray distance equals device-target distance.") +
+        ` Target bearing/elevation: ${fmt(targetBearing, 0)}° / ${fmt(targetElevation, 0)}°. ` +
+        `Ray bearing/elevation: ${fmt(rayBearing, 0)}° / ${fmt(rayElevation, 0)}°.`;
+
+      let orientationErrorDeg = readNumber("orientationError");
+
+      // If Safari provides a compass accuracy estimate, use it when larger.
+      if (Number.isFinite(o.webkitCompassAccuracy)) {
+        orientationErrorDeg = Math.max(orientationErrorDeg, o.webkitCompassAccuracy);
+      }
+
+      // If orientation is not absolute, heading may be arbitrary. Inflate the warning estimate.
+      if (!o.absolute) {
+        orientationErrorDeg = Math.max(orientationErrorDeg, 45);
+      }
+
+      const orientationLateralUncertainty = distance3d * Math.sin(degToRad(orientationErrorDeg));
+      const rayUncertainty95 = Math.hypot(positionUncertainty95, orientationLateralUncertainty);
+
+      rayPrecisionText =
+        `Approx. 95% position uncertainty: ±${fmt(positionUncertainty95)} m ` +
+        `(horizontal ±${fmt(horizontalAcc)} m, altitude ±${fmt(altitudeAcc)} m). ` +
+        `Approx. ray-distance uncertainty: ±${fmt(rayUncertainty95)} m, ` +
+        `using assumed orientation error ±${fmt(orientationErrorDeg, 0)}°. ` +
+        (o.absolute ? "Orientation reports absolute data." : "Orientation is not absolute; compass direction may be unreliable.");
+    } else {
+      el("rayDistance").textContent = "—";
+      rayPrecisionText =
+        `Approx. 95% position uncertainty: ±${fmt(positionUncertainty95)} m. Waiting for orientation.`;
+    }
+
+    if (!browserAltAvailable) {
+      rayPrecisionText += " Browser altitude is unavailable; using fallback current altitude.";
+    }
+
+    el("rayNote").textContent = rayNote;
+    el("precision").textContent = rayPrecisionText;
+
+    el("debug").textContent = JSON.stringify({
+      current: {
+        latitude: c.latitude,
+        longitude: c.longitude,
+        altitude_used_m: currentAlt,
+        browser_altitude_m: c.altitude,
+        horizontal_accuracy_m_95: c.accuracy,
+        altitude_accuracy_m_95: c.altitudeAccuracy
+      },
+      target: {
+        latitude: targetLat,
+        longitude: targetLon,
+        altitude_m: targetAlt,
+        vector_ENU_m: target,
+        distance_3d_m: distance3d
+      },
+      orientation: o
+    }, null, 2);
+  }
+
+  function onPosition(pos) {
+    state.position = pos;
+    update();
+  }
+
+  function onPositionError(err) {
+    el("status").textContent = `Geolocation error: ${err.message}`;
+  }
+
+  function onOrientation(event) {
+    if (event.alpha == null || event.beta == null || event.gamma == null) return;
+
+    const isAbsolute =
+      event.absolute === true ||
+      event.type === "deviceorientationabsolute" ||
+      Number.isFinite(event.webkitCompassHeading);
+
+    // Prefer absolute events over relative ones.
+    if (state.orientation && state.orientation.absolute && !isAbsolute) return;
+
+    state.orientation = {
+      type: event.type,
+      absolute: isAbsolute,
+      alpha: event.alpha,
+      beta: event.beta,
+      gamma: event.gamma,
+      webkitCompassHeading: event.webkitCompassHeading,
+      webkitCompassAccuracy: event.webkitCompassAccuracy
+    };
+
+    update();
+  }
+
+  async function start() {
+    el("status").textContent = "Requesting permissions…";
+
+    if (!("geolocation" in navigator)) {
+      el("status").textContent = "Geolocation is not available in this browser.";
+      return;
+    }
+
+    // iOS/Safari-style explicit permission request for motion/orientation.
+    try {
+      if (typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function") {
+        const result = await DeviceOrientationEvent.requestPermission(true);
+        if (result !== "granted") {
+          el("status").textContent = "Orientation permission was not granted. Location may still work.";
+        }
+      }
+    } catch (e) {
+      console.warn("Orientation permission request failed:", e);
+    }
+
+    window.addEventListener("deviceorientationabsolute", onOrientation, true);
+    window.addEventListener("deviceorientation", onOrientation, true);
+
+    navigator.geolocation.watchPosition(
+      onPosition,
+      onPositionError,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 20000
+      }
+    );
+
+    el("status").textContent = "Running. Allow location/orientation permissions if prompted.";
+  }
+
+  el("start").addEventListener("click", start);
+
+  for (const id of [
+    "targetLat", "targetLon", "targetAlt",
+    "fallbackAlt", "fallbackAltAcc",
+    "orientationError", "rayAxis"
+  ]) {
+    el(id).addEventListener("input", update);
+    el(id).addEventListener("change", update);
+  }
+})();
+</script>
+</body>
+</html>
