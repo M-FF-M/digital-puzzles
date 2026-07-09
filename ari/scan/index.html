@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=archive,detector,file_copy,warning" />
 
   <link rel="stylesheet" href="scan-style.css">
+  <script src="../crypto-puzzle.js"></script>
   <script type="module" src="scan-ui.js"></script>
 </head>
 <body>
@@ -23,7 +24,8 @@
       <p class="eyebrow">Portable Threshold v0.5</p>
       <h1>Null Zone Scanner</h1>
       <p class="intro">
-        Attach scanner module, hold the phone upright, and begin signal acquisition.
+        Scanner module connected successfully.
+        Keep scanner module close, hold the phone upright, and begin signal acquisition.
       </p>
 
       <button id="startScanButton" class="spaced" type="button">start scan</button>
@@ -36,7 +38,7 @@
       <p class="eyebrow">Signal acquisition</p>
       <h1>Searching for signal</h1>
       <p id="acquiringMessage" class="intro">
-        searching for signal, move outside and away from buildings or other objects
+        Move outside and away from buildings or other objects for higher reliability.
       </p>
       <p id="acquiringDetail" class="detail-line">initializing scan field...</p>
     </section>

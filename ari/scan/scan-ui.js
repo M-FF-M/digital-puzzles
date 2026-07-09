@@ -19,6 +19,8 @@ const SCAN_CONFIG = {
   // When scan data is first displayed, the raw browser altitude is used as a
   // baseline. Later altitude changes are applied relative to this reference.
   groundReferenceAltitudeM: 513,
+  // encrypted actual target
+  encryptedTarget: 'puzzlecrypt:eyJ2IjoxLCJhbGciOiJBRVMtR0NNIiwia2RmIjoiUEJLREYyLVNIQTI1NiIsIml0ZXJhdGlvbnMiOjIwMDAwMCwic2FsdCI6IitOd2Jqck1LZnFEdHpjaWozSUlPaEE9PSIsIml2IjoiWmtXYUMyVDNWYWVpUEVPWiIsImNpcGhlcnRleHQiOiJkRmxyVmZZTnRmREpQWHI5SnNyUSs3TStsbHkzZWJGaFJ1YUd3VklLQVJZM2RKYjBxSXZWazZZZnU3ODZkUEhpZEVvTDZ1L3hyaFdBYmFnN2w2ejQvV2lFeFkwK3UyOHJyeEl2TDljOFVBeGxvNG4vUzM3U0R1SkMifQ==',
 
   // The target is about 6 m from the outside walls; a little margin keeps the
   // page in the acquisition state until the player is probably outside.
@@ -62,6 +64,58 @@ const elements = {
   rateValue: document.querySelector("#rateValue"),
   scanStatus: document.querySelector("#scanStatus")
 };
+
+async function applyEncryptedTargetFromUrl() {
+  const encryptedTarget = SCAN_CONFIG.encryptedTarget;
+  const key = new URLSearchParams(window.location.search).get("k");
+
+  if (!key || !encryptedTarget) {
+    return;
+  }
+
+  if (typeof PuzzleCrypto === "undefined" || !PuzzleCrypto.decryptString) {
+    return;
+  }
+
+  try {
+    const decrypted = await PuzzleCrypto.decryptString(key, encryptedTarget);
+
+    if (decrypted === null) {
+      return;
+    }
+
+    const actualTarget = JSON.parse(decrypted);
+
+    const lat = Number(actualTarget.lat);
+    const lon = Number(actualTarget.lon);
+    const alt = Number(actualTarget.alt);
+    const refAlt = Number(actualTarget.ref_alt);
+
+    const valid =
+      Number.isFinite(lat) && lat >= -90 && lat <= 90 &&
+      Number.isFinite(lon) && lon >= -180 && lon <= 180 &&
+      Number.isFinite(alt) &&
+      Number.isFinite(refAlt);
+
+    if (!valid) {
+      return;
+    }
+
+    SCAN_CONFIG.target = {
+      latitude: lat,
+      longitude: lon,
+      altitudeM: alt
+    };
+
+    SCAN_CONFIG.groundReferenceAltitudeM = refAlt;
+  } catch (error) {
+    if (SCAN_CONFIG.debug) {
+      console.warn("Encrypted scan target could not be applied.", error);
+    }
+  }
+}
+
+await applyEncryptedTargetFromUrl();
 
 const altitudeCalibrator = createAltitudeCalibrator(SCAN_CONFIG.groundReferenceAltitudeM);
 
@@ -358,7 +412,7 @@ function handlePosition(position) {
 }
 
 function handlePositionError(error) {
-  showError(`Signal acquisition failed: ${error.message}`);
+  showError(`Signal acquisition failed: ${error.message}. You may want to try using a different device.`);
 }
 
 function handleOrientation(event) {
@@ -403,11 +457,16 @@ async function requestOrientationAccess() {
 
 async function lockPortraitIfPossible() {
   try {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+
     if (screen.orientation?.lock) {
       await screen.orientation.lock("portrait");
     }
-  } catch {
+  } catch (error) {
     // Unsupported or denied. The page still works; the browser controls rotation.
+    console.warn("Could not lock screen orientation:", error);
   }
 }
 
