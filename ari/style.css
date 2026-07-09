@@ -1,0 +1,254 @@
+
+html {
+  min-height: 100%;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+  color: rgb(15, 38, 57);
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-image: url(background.svg);
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+.header-block {
+  position: relative;
+  color: white;
+  width: 100%;
+  min-height: 6em;
+  background-color: rgb(20, 53, 80);
+  overflow: hidden;
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 320' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M0,0 H1440 V220 C1080,120 360,320 0,220 Z'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+
+.logo-table {
+  margin-top: 2em;
+  margin-bottom: 8em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.logo-text {
+  font-size: 1.2em;
+  padding-left: 0.8em;
+}
+
+.logo-block {
+  width: 4.5em;
+  height: 4.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  border-radius: 2.25em;
+}
+
+.logo-block > img {
+  width: 3.2em;
+  height: 2.36em;
+}
+
+.form-table {
+  border-radius: 0.25em;
+  box-shadow: 0.2em 0.2em 0.6em rgba(0, 0, 0, 0.3);
+  background-color: white;
+  margin-top: 3em;
+  margin-bottom: 3em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-table label:not(.error-label) {
+  display: inline-block;
+  font-size: 0.8em;
+  margin-top: 2em;
+  margin-bottom: 0.3em;
+  letter-spacing: 0.1em;
+  font-family: "Elms Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.form-table label.error-label {
+  font-size: 0.8em;
+  margin-top: 2em;
+  margin-bottom: 0.3em;
+  color: rgb(135, 30, 30);
+  display: inline-flex;
+  gap: 0.4em;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.form-table td {
+  padding-left: 3em;
+  padding-right: 3em;
+}
+
+.form-table tr:first-child td {
+  padding-top: 3em;
+  text-align: center;
+}
+
+.form-table tr:last-child td {
+  padding-bottom: 3em;
+}
+
+.form-table input[type=text], .form-table input[type=password], .form-table input[type=date] {
+  width: 20em;
+  max-width: max(8em, calc(100vw - 11em));
+  appearance: none;
+  font-family: inherit;
+  font-size: 1em;
+  padding-left: 0.6em;
+  padding-right: 0.6em;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  background-color: rgba(15, 38, 57, 0.05);
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  border-bottom: 0.125em solid rgba(15, 38, 57, 0.3);
+  outline: none;
+  transition-property: background-color, border-bottom-color;
+  transition-duration: 500ms;
+}
+
+.form-table input[type=text]:hover, .form-table input[type=password]:hover, .form-table input[type=date]:hover {
+  background-color: rgba(15, 38, 57, 0.1);
+}
+
+.form-table input[type=text]:focus, .form-table input[type=password]:focus, .form-table input[type=date]:focus {
+  background-color: rgba(15, 38, 57, 0.2);
+  border-bottom: 0.125em solid rgba(15, 38, 57, 1);
+}
+
+.form-table button.spaced {
+  margin-top: 1.8em;
+}
+
+.form-table button.small-space {
+  margin-top: 0.2em;
+}
+
+.form-table button {
+  appearance: none;
+  outline: none;
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+  background-color: rgb(15, 38, 57);
+  color: white;
+  border-radius: 0.125em;
+  border-width: 0;
+  font-size: 1em;
+  outline: 0.1875em solid transparent;
+  letter-spacing: 0.1em;
+  font-family: "Elms Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  transition-property: background-color, outline;
+  transition-duration: 500ms;
+}
+
+.form-table button:not(:disabled):not(.light):hover {
+  background-color: rgb(34, 87, 129);
+}
+
+.form-table button:focus {
+  outline: 0.125em solid rgba(15, 38, 57, 0.4);
+}
+
+.form-table button.light {
+  font-size: 0.8em;
+  letter-spacing: normal;
+  background-color: rgba(15, 38, 57, 0.05);
+  color: rgb(15, 38, 57);
+}
+
+.form-table button:not(:disabled).light:hover {
+  background-color: rgba(15, 38, 57, 0.2);
+}
+
+.form-table button:disabled {
+  filter: saturate(0);
+}
+
+#pwd-forgotten-form, #recovery-form {
+  display: none;
+}
+
+.limited-width {
+  max-width: min(22em, max(8em, calc(100vw - 11em)));
+}
+
+.header-text {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.dashboard {
+  border-spacing: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard tr:first-child td {
+  text-align: center;
+}
+
+.dashboard-cell {
+  cursor: pointer;
+  max-width: 8em;
+  width: 8em;
+  text-align: center;
+  background-color: rgb(15, 38, 57);
+  color: white;
+  padding: 1em;
+  border-radius: 0.125em;
+  transition-property: background-color;
+  transition-duration: 500ms;
+}
+
+.dashboard-cell:hover {
+  background-color: rgb(34, 87, 129);
+}
+
+.dashboard-cell span {
+  font-size: 3em;
+}
+
+.card {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0.25em;
+  box-shadow: 0.2em 0.2em 0.6em rgba(0, 0, 0, 0.3);
+  background-color: white;
+  margin-top: 3em;
+  margin-bottom: 3em;
+  padding: 3em;
+}

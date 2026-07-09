@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Puzzle File Crypto Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+
+    input,
+    button {
+      font: inherit;
+    }
+
+    input[type="password"],
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0.5rem 0 1rem;
+    }
+
+    button {
+      padding: 0.6rem 1rem;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .row {
+      margin-bottom: 1.5rem;
+    }
+
+    .status {
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    .ok {
+      color: #087f23;
+    }
+
+    .error {
+      color: #b00020;
+    }
+
+    .hint {
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    #downloadArea {
+      margin-top: 1rem;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 500px;
+      margin-top: 1rem;
+      background: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Puzzle File Crypto Tool</h1>
+
+  <p>
+    Use this page to encrypt or decrypt puzzle files such as videos.
+    The encrypted output can be committed to your static site.
+  </p>
+
+  <div class="row">
+    <label for="key"><strong>Key</strong></label>
+    <input id="key" type="password" placeholder="Enter encryption/decryption key">
+  </div>
+
+  <div class="row">
+    <label for="fileInput"><strong>File</strong></label>
+    <input id="fileInput" type="file">
+
+    <button id="encryptButton">Encrypt selected file</button>
+    <button id="decryptButton">Decrypt selected file</button>
+
+    <p class="hint">
+      Encryption creates a <code>.pcrypt</code> file. Decryption expects a file produced by this tool.
+    </p>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="downloadArea"></div>
+
+  <video id="preview" controls playsinline></video>
+
+  <script src="crypto-puzzle.js"></script>
+
+  <script>
+    const keyInput = document.getElementById("key");
+    const fileInput = document.getElementById("fileInput");
+    const encryptButton = document.getElementById("encryptButton");
+    const decryptButton = document.getElementById("decryptButton");
+    const statusBox = document.getElementById("status");
+    const downloadArea = document.getElementById("downloadArea");
+    const preview = document.getElementById("preview");
+
+    let currentObjectUrl = null;
+
+    function setStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = "status " + type;
+    }
+
+    function clearDownloadArea() {
+      downloadArea.textContent = "";
+
+      if (currentObjectUrl !== null) {
+        URL.revokeObjectURL(currentObjectUrl);
+        currentObjectUrl = null;
+      }
+
+      preview.removeAttribute("src");
+      preview.style.display = "none";
+    }
+
+    function getKeyOrWarn() {
+      const key = keyInput.value;
+
+      if (!key) {
+        setStatus("Please enter a key.", "error");
+        return null;
+      }
+
+      return key;
+    }
+
+    function getFileOrWarn() {
+      const file = fileInput.files[0];
+
+      if (!file) {
+        setStatus("Please select a file.", "error");
+        return null;
+      }
+
+      return file;
+    }
+
+    function createDownloadLink(blob, filename, label) {
+      currentObjectUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = currentObjectUrl;
+      link.download = filename;
+      link.textContent = label;
+
+      downloadArea.textContent = "";
+      downloadArea.appendChild(link);
+    }
+
+    encryptButton.addEventListener("click", async () => {
+      clearDownloadArea();
+
+      const key = getKeyOrWarn();
+      if (key === null) return;
+
+      const file = getFileOrWarn();
+      if (file === null) return;
+
+      encryptButton.disabled = true;
+      decryptButton.disabled = true;
+
+      try {
+        setStatus("Encrypting file...", "");
+
+        const plaintextBytes = await file.arrayBuffer();
+
+        const encryptedBytes = await PuzzleCrypto.encryptBytes(
+          key,
+          plaintextBytes,
+          {
+            originalType: file.type || "application/octet-stream"
+          }
+        );
+
+        const encryptedBlob = new Blob(
+          [encryptedBytes],
+          {
+            type: "application/octet-stream"
+          }
+        );
+
+        createDownloadLink(
+          encryptedBlob,
+          file.name + ".pcrypt",
+          "Download encrypted file"
+        );
+
+        setStatus("Encrypted successfully.", "ok");
+      } catch (error) {
+        console.error(error);
+        setStatus("Encryption failed.", "error");
+      } finally {
+        encryptButton.disabled = false;
+        decryptButton.disabled = false;
+      }
+    });
+
+    decryptButton.addEventListener("click", async () => {
+      clearDownloadArea();
+
+      const key = getKeyOrWarn();
+      if (key === null) return;
+
+      const file = getFileOrWarn();
+      if (file === null) return;
+
+      encryptButton.disabled = true;
+      decryptButton.disabled = true;
+
+      try {
+        setStatus("Decrypting file...", "");
+
+        const encryptedBytes = await file.arrayBuffer();
+        const result = await PuzzleCrypto.decryptBytes(key, encryptedBytes);
+
+        if (result === null) {
+          setStatus("Decryption failed. The key may be wrong, or the file may be invalid.", "error");
+          return;
+        }
+
+        const mimeType = result.metadata.originalType || "application/octet-stream";
+
+        const decryptedBlob = new Blob(
+          [result.bytes],
+          {
+            type: mimeType
+          }
+        );
+
+        const outputName = file.name.replace(/\.pcrypt$/i, "") || "decrypted-file";
+
+        createDownloadLink(
+          decryptedBlob,
+          outputName,
+          "Download decrypted file"
+        );
+
+        if (mimeType.startsWith("video/")) {
+          preview.src = currentObjectUrl;
+          preview.style.display = "block";
+        }
+
+        setStatus("Decrypted successfully.", "ok");
+      } catch (error) {
+        console.error(error);
+        setStatus("Decryption failed.", "error");
+      } finally {
+        encryptButton.disabled = false;
+        decryptButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

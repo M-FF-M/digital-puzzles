@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Null Zone Scan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=archive,detector,file_copy,warning" />
+
+  <link rel="stylesheet" href="scan-style.css">
+  <script type="module" src="scan-ui.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <section id="startPanel" class="panel start-panel form-table">
+      <div class="scanner-mark" aria-hidden="true">
+        <span class="material-symbols-outlined">detector</span>
+      </div>
+
+      <p class="eyebrow">Portable Threshold v0.5</p>
+      <h1>Null Zone Scanner</h1>
+      <p class="intro">
+        Attach scanner module, hold the phone upright, and begin signal acquisition.
+      </p>
+
+      <button id="startScanButton" class="spaced" type="button">start scan</button>
+    </section>
+
+    <section id="acquiringPanel" class="panel acquiring-panel hidden" aria-live="polite">
+      <div class="status-orb" aria-hidden="true">
+        <span class="material-symbols-outlined">detector</span>
+      </div>
+      <p class="eyebrow">Signal acquisition</p>
+      <h1>Searching for signal</h1>
+      <p id="acquiringMessage" class="intro">
+        searching for signal, move outside and away from buildings or other objects
+      </p>
+      <p id="acquiringDetail" class="detail-line">initializing scan field...</p>
+    </section>
+
+    <section id="scannerPanel" class="scanner-panel hidden" aria-live="polite">
+      <p class="eyebrow scanner-eyebrow">Active scan</p>
+
+      <div id="scannerDial" class="scanner-dial">
+        <div id="rotatingLayer" class="rotating-layer">
+          <div class="signal-layer" id="signalLayer" aria-hidden="true"></div>
+
+          <div class="compass-rose" aria-hidden="true">
+            <div class="compass-ring"></div>
+            <div class="compass-line compass-line-ns"></div>
+            <div class="compass-line compass-line-ew"></div>
+            <div class="compass-diagonal compass-diagonal-a"></div>
+            <div class="compass-diagonal compass-diagonal-b"></div>
+            <span class="compass-label compass-n">N</span>
+            <span class="compass-label compass-e">E</span>
+            <span class="compass-label compass-s">S</span>
+            <span class="compass-label compass-w">W</span>
+          </div>
+        </div>
+
+        <div class="distance-card">
+          <div id="distanceValue" class="distance-value">-- m</div>
+          <div class="distance-label">approximate signal distance</div>
+        </div>
+      </div>
+
+      <div class="scan-readout">
+        <div>
+          <span class="readout-label">Signal precision</span>
+          <span id="precisionValue" class="readout-value">--</span>
+        </div>
+        <div>
+          <span class="readout-label">Signal rate</span>
+          <span id="rateValue" class="readout-value">--</span>
+        </div>
+      </div>
+
+      <p id="scanStatus" class="detail-line">scan field locked</p>
+    </section>
+
+    <section id="errorPanel" class="panel error-panel hidden" aria-live="assertive">
+      <div class="scanner-mark warning" aria-hidden="true">
+        <span class="material-symbols-outlined">warning</span>
+      </div>
+      <p class="eyebrow">Scanner interrupted</p>
+      <h1>Signal unavailable</h1>
+      <p id="errorMessage" class="intro">The scan could not be started on this device.</p>
+      <button id="retryButton" type="button" class="light">retry</button>
+    </section>
+  </main>
+</body>
+</html>

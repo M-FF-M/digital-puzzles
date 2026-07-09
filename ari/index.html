@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+
+  <title>Async Research Institute</title>
+  <meta name="description" content="Kletter-Logbuch" />
+  <meta name="author" content="Fabian Michel" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=archive,detector,file_copy,warning" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="logo.png" />
+  <script src="crypto-puzzle.js"></script>
+  <script src="main.js"></script>
+</head>
+
+<body onload="main();">
+  <div class="header-block">
+    <table class="logo-table">
+      <tr>
+        <td><div class="logo-block"><img src="logo-white.png" /></div></td>
+        <td class="logo-text">Async<br />Research<br />Institute</td>
+      </tr>
+    </table>
+  </div>
+  
+  <form id="login-form">
+    <table class="form-table" id="login-table">
+      <tr>
+        <td>Login</td>
+      </tr>
+      <tr>
+        <td><label for="employee-id">ID</label></td>
+      </tr>
+      <tr>
+        <td><input id="employee-id" type="text" /></td>
+      </tr>
+      <tr>
+        <td><label for="password">PASSWORD</label></td>
+      </tr>
+      <tr>
+        <td><input id="password" type="password" /></td>
+      </tr>
+      <tr>
+        <td><button type="submit" id="login-btn" class="spaced">LOGIN</button></td>
+      </tr>
+      <!-- <tr>
+        <td><label for="pwd-forgotten" class="error-label"><span class="material-symbols-outlined">warning</span><span>ID or password is wrong</span></label></td>
+      </tr>
+      <tr>
+        <td><button id="pwd-forgotten" class="light small-space">PASSWORD FORGOTTEN</button></td>
+      </tr> -->
+    </table>
+  </form>
+  
+  <form id="pwd-forgotten-form">
+    <table class="form-table" id="pwd-forgotten-table">
+      <tr>
+        <td>Confirm Identity</td>
+      </tr>
+      <tr>
+        <td><label for="conf-employee-id">ID</label></td>
+      </tr>
+      <tr>
+        <td><input id="conf-employee-id" type="text" /></td>
+      </tr>
+      <tr>
+        <td><label for="conf-fname">FIRST NAME</label></td>
+      </tr>
+      <tr>
+        <td><input id="conf-fname" type="text" /></td>
+      </tr>
+      <tr>
+        <td><label for="conf-lname">LAST NAME</label></td>
+      </tr>
+      <tr>
+        <td><input id="conf-lname" type="text" /></td>
+      </tr>
+      <tr>
+        <td><label for="conf-birth">DATE OF BIRTH</label></td>
+      </tr>
+      <tr>
+        <td><input id="conf-birth" type="date" /></td>
+      </tr>
+      <tr>
+        <td><button type="submit" id="conf-btn" class="spaced">CONFIRM</button></td>
+      </tr>
+      <!-- <tr>
+        <td><label id="conf-error" class="error-label"><span class="material-symbols-outlined">warning</span><span>ID not found</span></label></td>
+      </tr> -->
+    </table>
+  </form>
+  
+  <form id="recovery-form">
+    <table class="form-table" id="recovery-table">
+      <tr>
+        <td><span class="header-text">Temporary view-only access</span></td>
+      </tr>
+      <tr>
+        <td class="limited-width">
+          <p>Based on the personal information you provided, temporary
+           view-only access to your employee profile has been granted.</p>
+
+          <p>This access allows you to review your personal data only.
+            You will not be able to make changes, or use any account features requiring full authentication.</p>
+
+          <p>To restore full access, you must visit IT Support in person and verify your identity.
+            Remote password reset is not available for this account at this stage.</p>
+
+          <p>Your temporary view-only access will remain active for <b>48 hours</b> from the time it was granted.
+            After this period, access from this account will be blocked completely until your identity has
+            been confirmed by IT Support.</p>
+
+          <p>Please contact or visit IT Support as soon as possible to avoid interruption of access.</p></td>
+      </tr>
+      <tr>
+        <td><button type="submit" id="recovery-btn" class="spaced">CONFIRM</button></td>
+      </tr>
+    </table>
+  </form>
+
+  <div class="card" id="dashboard">
+    <table class="dashboard">
+      <tr>
+        <td colspan="2">
+          <span class="header-text">Dashboard</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="dashboard-cell">
+          <span class="material-symbols-outlined">file_copy</span><br />
+          3723398-26
+        </td>
+        <td class="dashboard-cell">
+          <span class="material-symbols-outlined">detector</span><br />
+          Connect Portable Threshold
+        </td>
+      </tr>
+      <tr>
+        <td class="dashboard-cell" colspan="2">
+          <span class="material-symbols-outlined">archive</span><br />
+          Past events
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <form id="access-denied-form">
+    <table class="form-table" id="access-denied-table">
+      <tr>
+        <td>
+          <span class="header-text">Access denied</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="limited-width">
+          Full authentication is required to access past events.
+          To restore full access, you must visit IT Support in person and verify your identity.
+        </td>
+      </tr>
+      <tr>
+        <td><button type="submit" id="access-denied-btn" class="spaced">OK</button></td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
