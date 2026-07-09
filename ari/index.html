@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=archive,detector,file_copy,warning" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_circle,archive,detector,file_copy,warning" />
   <link rel="stylesheet" href="style.css" />
   <link rel="shortcut icon" href="logo.png" />
   <script src="crypto-puzzle.js"></script>
@@ -131,17 +131,21 @@
         </td>
       </tr>
       <tr>
-        <td class="dashboard-cell">
+        <td class="dashboard-cell" id="profile-btn">
+          <span class="material-symbols-outlined">account_circle</span><br />
+          Profile
+        </td>
+        <td class="dashboard-cell" id="file-btn">
           <span class="material-symbols-outlined">file_copy</span><br />
           3723398-26
         </td>
-        <td class="dashboard-cell">
+      </tr>
+      <tr>
+        <td class="dashboard-cell" id="portable-btn">
           <span class="material-symbols-outlined">detector</span><br />
           Connect Portable Threshold
         </td>
-      </tr>
-      <tr>
-        <td class="dashboard-cell" colspan="2">
+        <td class="dashboard-cell" id="archive-btn">
           <span class="material-symbols-outlined">archive</span><br />
           Past events
         </td>
@@ -158,8 +162,8 @@
       </tr>
       <tr>
         <td class="limited-width">
-          Full authentication is required to access past events.
-          To restore full access, you must visit IT Support in person and verify your identity.
+          <p>Full authentication is required to access past events.
+          To restore full access, you must visit IT Support in person and verify your identity.</p>
         </td>
       </tr>
       <tr>
@@ -167,5 +171,80 @@
       </tr>
     </table>
   </form>
+  
+  <form id="profile-form">
+    <table class="form-table" id="profile-table">
+      <tr>
+        <td>
+          <span class="header-text">Profile</span>
+        </td>
+      </tr>
+      <tr>
+        <td><label>NAME</label></td>
+      </tr>
+      <tr>
+        <td>Some Name</td>
+      </tr>
+      <tr>
+        <td><label>DATE OF BIRTH</label></td>
+      </tr>
+      <tr>
+        <td>XX Month XXXX</td>
+      </tr>
+      <tr>
+        <td><label>ADDRESS</label></td>
+      </tr>
+      <tr>
+        <td>1 Some Street<br />Some City, CC 12345<br />USA</td>
+      </tr>
+      <tr>
+        <td><label>EMPLOYEE ID</label></td>
+      </tr>
+      <tr>
+        <td>XXXXXX</td>
+      </tr>
+      <tr>
+        <td><label>DEPARTMENT</label></td>
+      </tr>
+      <tr>
+        <td>Applied Mathematics</td>
+      </tr>
+      <tr>
+        <td><label>ACCESS LEVEL</label></td>
+      </tr>
+      <tr>
+        <td>Access Suspended</td>
+      </tr>
+      <tr>
+        <td><button type="submit" id="access-denied-btn" class="spaced">BACK</button></td>
+      </tr>
+    </table>
+  </form>
+
+  <!-- <div class="message-stream" id="chat-messages">
+    <div class="message-button">
+      <button class="back-to-dashboard">BACK TO DASHBOARD</button>
+    </div>
+    <div class="message-others">
+      <span class="date">12 Oct 24, 13:14</span>
+      <span class="content">This is your assignment</span>
+      <span class="attachments"><a href="XXX.pdf">Assignment</a></span>
+    </div>
+    <div class="message-self">
+      <span class="date">12 Oct 24, 13:17</span>
+      <span class="content">Thanks, I'll look into it</span>
+    </div>
+    <div class="message-button">
+      <button class="back-to-dashboard">BACK TO DASHBOARD</button>
+    </div>
+  </div> -->
+
+  <div class="message-stream" id="chat-messages">
+    <div class="message-button">
+      <button class="back-to-dashboard">BACK TO DASHBOARD</button>
+    </div>
+  </div>
+
+  <div>&nbsp;</div>
 </body>
 </html>

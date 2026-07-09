@@ -20,12 +20,12 @@ const SCAN_CONFIG = {
   // baseline. Later altitude changes are applied relative to this reference.
   groundReferenceAltitudeM: 513,
   // encrypted actual target
-  encryptedTarget: 'puzzlecrypt:eyJ2IjoxLCJhbGciOiJBRVMtR0NNIiwia2RmIjoiUEJLREYyLVNIQTI1NiIsIml0ZXJhdGlvbnMiOjIwMDAwMCwic2FsdCI6IitOd2Jqck1LZnFEdHpjaWozSUlPaEE9PSIsIml2IjoiWmtXYUMyVDNWYWVpUEVPWiIsImNpcGhlcnRleHQiOiJkRmxyVmZZTnRmREpQWHI5SnNyUSs3TStsbHkzZWJGaFJ1YUd3VklLQVJZM2RKYjBxSXZWazZZZnU3ODZkUEhpZEVvTDZ1L3hyaFdBYmFnN2w2ejQvV2lFeFkwK3UyOHJyeEl2TDljOFVBeGxvNG4vUzM3U0R1SkMifQ==',
+  encryptedTarget: 'puzzlecrypt:eyJ2IjoxLCJhbGciOiJBRVMtR0NNIiwia2RmIjoiUEJLREYyLVNIQTI1NiIsIml0ZXJhdGlvbnMiOjIwMDAwMCwic2FsdCI6IngxM3ZJL2pjZUthZXpyNzg0TmIrRXc9PSIsIml2IjoiUndHVjRTL2VpdlBTREs3TiIsImNpcGhlcnRleHQiOiJaNmcyTjVMdENLRkxsY25tOTF0MDMyd3BsTVQvNnZNWUY3aVRMbTJ6UzNUR1dsaHc1WnREK2g5SmJPYWsxcWZFR01YRkpLcnI2OU8yRWJOQ09OSkFRVEt6dnZSTW9NWlBwSDVKU2Z6QzdMREFHcFdQdGVMYUorcG8ifQ==',
 
   // The target is about 6 m from the outside walls; a little margin keeps the
   // page in the acquisition state until the player is probably outside.
   targetToOutsideWallDistanceM: 6,
-  outsideMarginM: 2,
+  outsideMarginM: 15,
 
   minAcquisitionTimeMs: 20_000,
   fallbackAltitudeAccuracyM: 30,

@@ -96,6 +96,75 @@ async function main() {
   
   document.getElementById('recovery-form').addEventListener('submit', (e) => {
     e.preventDefault();
+    document.getElementById('recovery-form').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
   });
+
+  document.getElementById('profile-btn').addEventListener('click', () => {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('profile-form').style.display = 'block';
+  });
+
+  document.getElementById('file-btn').addEventListener('click', () => {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('chat-messages').style.display = 'flex';
+  });
+
+  document.getElementById('portable-btn').addEventListener('click', () => {
+    window.open("scan/pair.html", "_blank");
+  });
+
+  document.getElementById('archive-btn').addEventListener('click', () => {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('access-denied-form').style.display = 'block';
+  });
+
+  document.getElementById('access-denied-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    document.getElementById('access-denied-form').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  });
+
+  document.getElementById('profile-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    document.getElementById('profile-form').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  });
+
+  for (const btn of document.getElementsByClassName('back-to-dashboard')) {
+    btn.addEventListener('click', () => {
+      document.getElementById('chat-messages').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+    });
+  }
 }
 
+function fillChat() {
+  const defaultChat = {
+    chat: [
+      {
+        type: 'others',
+        time: '12 Oct 24, 13:14',
+        content: 'This is your assignment',
+        attachment: ['Assignment', 'XXX.pdf']
+      },
+      {
+        type: 'self',
+        time: '12 Oct 24, 13:17',
+        content: 'Thanks, I\'ll look into it'
+      },
+      {
+        type: 'self',
+        time: '12 Oct 24, 13:19',
+        content: 'Livestream ended at 12 Oct 24, 13:20. Replay:',
+        video: 'XXX.mp4'
+      }
+    ]
+  };
+  const chatHistory = defaultChat.chat;
+  const btn1 = document.createElement('button');
+  btn1.classList.add('back-to-dashboard');
+  const btn2 = document.createElement('button');
+  btn2.classList.add('back-to-dashboard');
+  // TODO
+}
