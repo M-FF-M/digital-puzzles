@@ -1,6 +1,8 @@
 import {
   computePositioningMetrics,
-  createAltitudeCalibrator
+  createAltitudeCalibrator,
+  normalizeDeg,
+  normalizeSignedDeg
 } from "./positioning.js";
 
 /*
@@ -72,7 +74,9 @@ const scanState = {
   revealed: false,
   audioContext: null,
   lastSignalAtMs: 0,
-  animationFrameId: null
+  animationFrameId: null,
+  lastNorthAngleScreenDeg: null,
+  continuousNorthAngleDeg: 0
 };
 
 function showPanel(panelName) {
@@ -270,6 +274,22 @@ function updateAcquiringDetail(metrics) {
   }
 }
 
+function continuousNorthAngle(rawAngleDeg) {
+  if (!Number.isFinite(rawAngleDeg)) return null;
+
+  if (scanState.lastNorthAngleScreenDeg === null) {
+    scanState.lastNorthAngleScreenDeg = rawAngleDeg;
+    scanState.continuousNorthAngleDeg = rawAngleDeg;
+    return scanState.continuousNorthAngleDeg;
+  }
+
+  const delta = normalizeSignedDeg(rawAngleDeg - scanState.lastNorthAngleScreenDeg);
+  scanState.continuousNorthAngleDeg += delta;
+  scanState.lastNorthAngleScreenDeg = rawAngleDeg;
+
+  return scanState.continuousNorthAngleDeg;
+}
+
 function renderMetrics(metrics) {
   if (!metrics) return;
 
@@ -280,7 +300,8 @@ function renderMetrics(metrics) {
   elements.rateValue.textContent = metrics.hasOrientation ? formatRate(rate) : "aligning";
 
   if (Number.isFinite(metrics.northAngleScreenDeg)) {
-    elements.rotatingLayer.style.setProperty("--north-angle", `${metrics.northAngleScreenDeg}deg`);
+    const angle = continuousNorthAngle(metrics.northAngleScreenDeg);
+    elements.rotatingLayer.style.setProperty("--north-angle", `${angle}deg`);
   }
 
   elements.scanStatus.textContent = metrics.hasOrientation
@@ -314,17 +335,21 @@ function updateScan() {
 }
 
 function signalAnimationLoop(nowMs) {
-  if (scanState.revealed && scanState.latestMetrics?.hasOrientation) {
-    const rate = signalRateHz(scanState.latestMetrics.weightedSignalDistanceM);
-    const intervalMs = 1000 / rate;
+  try {
+    if (scanState.revealed && scanState.latestMetrics?.hasOrientation) {
+      const rate = signalRateHz(scanState.latestMetrics.weightedSignalDistanceM);
+      const intervalMs = 1000 / rate;
 
-    if (nowMs - scanState.lastSignalAtMs >= intervalMs) {
-      createSignalPoint(scanState.latestMetrics);
-      scanState.lastSignalAtMs = nowMs;
+      if (nowMs - scanState.lastSignalAtMs >= intervalMs) {
+        scanState.lastSignalAtMs = nowMs;
+        createSignalPoint(scanState.latestMetrics);
+      }
     }
+  } catch (error) {
+    console.error("Signal animation failed:", error);
+  } finally {
+    scanState.animationFrameId = window.requestAnimationFrame(signalAnimationLoop);
   }
-
-  scanState.animationFrameId = window.requestAnimationFrame(signalAnimationLoop);
 }
 
 function handlePosition(position) {
@@ -413,6 +438,8 @@ async function startScan() {
   scanState.latestMetrics = null;
   scanState.revealed = false;
   scanState.lastSignalAtMs = scanState.startedAtMs;
+  scanState.lastNorthAngleScreenDeg = null;
+  scanState.continuousNorthAngleDeg = 0;
 
   ensureAudioContext();
   showPanel("acquiringPanel");
