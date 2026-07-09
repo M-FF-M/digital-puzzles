@@ -433,3 +433,72 @@ h1 {
     transition: none;
   }
 }
+
+/* Pairing page additions, matching the shared form styling. */
+.form-table input[type="text"],
+.form-table input[type="password"],
+.form-table input[type="date"],
+.form-table input[type="number"] {
+  width: 20em;
+  max-width: max(8em, calc(100vw - 11em));
+  appearance: none;
+  font-family: inherit;
+  font-size: 1em;
+  padding-left: 0.6em;
+  padding-right: 0.6em;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  background-color: rgba(15, 38, 57, 0.05);
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  border-bottom: 0.125em solid rgba(15, 38, 57, 0.3);
+  outline: none;
+  transition-property: background-color, border-bottom-color;
+  transition-duration: 500ms;
+}
+
+.form-table input[type="text"]:hover,
+.form-table input[type="password"]:hover,
+.form-table input[type="date"]:hover,
+.form-table input[type="number"]:hover {
+  background-color: rgba(15, 38, 57, 0.1);
+}
+
+.form-table input[type="text"]:focus,
+.form-table input[type="password"]:focus,
+.form-table input[type="date"]:focus,
+.form-table input[type="number"]:focus {
+  background-color: rgba(15, 38, 57, 0.2);
+  border-bottom: 0.125em solid rgba(15, 38, 57, 1);
+}
+
+.pair-form {
+  margin-top: 1.8em;
+}
+
+.pair-form button.spaced {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pairing-code-input {
+  text-align: center;
+  font-family: "Elms Sans", sans-serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

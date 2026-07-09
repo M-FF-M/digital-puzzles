@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Portable Threshold Pairing</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=archive,detector,file_copy,warning" />
+
+  <link rel="stylesheet" href="scan-style.css">
+  <script src="../crypto-puzzle.js"></script>
+  <script type="module" src="pair-ui.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <section id="pairPanel" class="panel start-panel form-table" aria-live="polite">
+      <div id="pairIcon" class="scanner-mark" aria-hidden="true">
+        <span id="pairIconSymbol" class="material-symbols-outlined">detector</span>
+      </div>
+
+      <p class="eyebrow">Portable Threshold v0.5</p>
+      <h1>Device Pairing</h1>
+      <p id="pairMessage" class="intro">
+        Enter your Portable Threshold's pairing code to connect your device
+      </p>
+
+      <form id="pairForm" class="pair-form" autocomplete="off">
+        <label class="visually-hidden" for="pairingCode">Pairing code</label>
+        <input
+          id="pairingCode"
+          class="pairing-code-input"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          max="999999"
+          step="1"
+          placeholder="000000"
+          aria-label="Pairing code"
+          required>
+        <button id="confirmButton" class="spaced" type="submit">confirm</button>
+      </form>
+
+      <button id="retryButton" class="spaced light hidden" type="button">retry</button>
+    </section>
+  </main>
+</body>
+</html>
