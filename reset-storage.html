@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+
+  <title>Digital puzzles storage reset</title>
+  <meta name="description" content="reset any cookies and data saved in local storage for any puzzle" />
+  <meta name="author" content="Fabian Michel" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script>
+
+    function appendMessage(msg) {
+      const p = document.createElement('p');
+      p.textContent = msg;
+      document.getElementById('info-div').appendChild(p);
+    }
+
+    function main() {
+      if (localStorage.getItem('ariaccesskey') !== null) {
+        appendMessage(`localStorage: entry ariaccesskey=${localStorage.getItem('ariaccesskey')} was deleted`);
+        localStorage.removeItem('ariaccesskey');
+      } else {
+        appendMessage('localStorage: entry ariaccesskey was not set');
+      }
+    }
+
+  </script>
+</head>
+
+<body onload="main();">
+  
+  <div id="info-div"></div>
+
+</body>
+</html>
