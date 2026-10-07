@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Eni">
+  <title>TV Classic (?)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    :root {
+      --accent: #344c63;
+      --accent-dark: #263b4d;
+      --accent-pale: #e7edf2;
+      --ink: #202b34;
+      --muted: #66737e;
+      --paper: #f7f8fa;
+      --card: #ffffff;
+      --correct: #246b48;
+      --wrong: #9b3b3b;
+      --hint: #bb7814;
+      --line: #d6dee5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Atkinson Hyperlegible", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(900px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 3rem 0 4rem;
+    }
+
+    h1 {
+      margin: 0 0 1.5rem;
+      color: var(--accent-dark);
+      font-family: "Special Elite", serif;
+      font-size: clamp(2.1rem, 7vw, 3.6rem);
+      font-weight: 400;
+      text-align: center;
+      letter-spacing: .02em;
+    }
+
+    .card {
+      padding: clamp(1rem, 3vw, 1.7rem);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(38, 59, 77, .09);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      max-height: 62vh;
+      background: #141a1f;
+      border-radius: 8px;
+    }
+
+    .answer-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .7rem;
+      margin-top: 1.25rem;
+    }
+
+    label {
+      grid-column: 1 / -1;
+      font-weight: 700;
+    }
+
+    input {
+      min-width: 0;
+      padding: .78rem .9rem;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid #aebbc6;
+      border-radius: 7px;
+      font: inherit;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      outline: 3px solid rgba(52, 76, 99, .16);
+    }
+
+    button, .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      padding: .78rem 1.05rem;
+      color: #fff;
+      background: var(--accent);
+      border: 0;
+      border-radius: 7px;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    button:hover, .button-link:hover { background: var(--accent-dark); }
+    button:active, .button-link:active { transform: translateY(1px); }
+    button:focus-visible, .button-link:focus-visible {
+      outline: 3px solid rgba(52, 76, 99, .25);
+      outline-offset: 2px;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    .feedback {
+      display: flex;
+      align-items: center;
+      min-height: 2rem;
+      margin: .65rem 0 0;
+      font-weight: 700;
+    }
+    .feedback.correct { color: var(--correct); }
+    .feedback.wrong { color: var(--wrong); }
+    .feedback.close { color: var(--hint); }
+    .feedback .material-icons-round { margin-right: .35rem; }
+
+    .history {
+      margin-top: 1.45rem;
+      padding-top: 1.15rem;
+      border-top: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 .75rem;
+      color: var(--accent-dark);
+      font-size: 1.2rem;
+    }
+
+    .history-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .history-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .45rem 0;
+      border-bottom: 1px dashed var(--line);
+    }
+    .history-list li:last-child { border-bottom: 0; }
+    .history-answer { overflow-wrap: anywhere; }
+    time { flex: none; color: var(--muted); font-size: .9rem; }
+    .empty { color: var(--muted); font-style: italic; }
+
+    .hints { margin-top: 1.25rem; }
+    .hint-controls { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .secondary {
+      color: var(--accent-dark);
+      background: var(--accent-pale);
+      border: 1px solid #bcc9d3;
+    }
+    .secondary:hover { background: #d9e3eb; }
+
+    .hint-box {
+      margin: 1rem 0 0;
+      padding: 1rem 1.1rem;
+      background: var(--accent-pale);
+      border-left: 5px solid var(--accent);
+      border-radius: 4px;
+    }
+    .hint-count {
+      display: block;
+      margin-bottom: .25rem;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .hint-box p { margin: 0; }
+    .hint-box a { color: var(--accent-dark); font-weight: 700; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 540px) {
+      main { width: min(100% - 1rem, 900px); padding-top: 1.7rem; }
+      .answer-form { grid-template-columns: 1fr; }
+      .answer-form button { width: 100%; }
+      .history-list li { align-items: flex-start; flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>TV Classic (?)</h1>
+
+    <section class="card" aria-label="Riddle">
+      <video controls playsinline preload="metadata">
+        <source src="enione-can-dream-in-technicolor.mp4" type="video/mp4">
+        Your browser does not support embedded video.
+      </video>
+
+      <form class="answer-form" id="answer-form">
+        <!-- <label for="answer">What is the solution?</label> -->
+        <input id="answer" name="answer" type="text" autocomplete="off" placeholder="Enter your answer…" required>
+        <button type="submit">Check!</button>
+      </form>
+      <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+
+      <section class="history" aria-labelledby="history-heading">
+        <h2 id="history-heading">Recent answers</h2>
+        <ol class="history-list" id="history-list"></ol>
+      </section>
+
+      <section class="hints" aria-labelledby="hints-heading">
+        <h2 id="hints-heading">Hints</h2>
+        <div class="hint-controls">
+          <button type="button" id="show-hint">Show first hint</button>
+          <button type="button" class="secondary" id="previous-hint" hidden>Previous hint</button>
+          <button type="button" id="next-hint" hidden>Show next hint</button>
+        </div>
+        <div class="hint-box" id="hint-box" hidden>
+          <span class="hint-count" id="hint-count"></span>
+          <p id="hint-text"></p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const solution = "dream a little dream of me";
+      const historyKey = "tv-classic-riddle-answer-history";
+      const maxHistory = 6;
+      const hints = [
+        "The episodes are only important for the very last step of the riddle.",
+        "The video file name is important.",
+        "The word “technicolor” hints at what you should do.",
+        'The following clip is of higher quality and contains only the relevant video part: <a href="enione-can-dream-in-technicolor-short.mp4">open the shorter video clip</a>. (You can also continue to the next hint without looking at this clip.)',
+        "Technicolor cameras split light into different color components.",
+        "Look at the RGB channels of the video separately.",
+        "The blue channel contains a smaller pictogram video when the lyrics “enione can dream in technicolor” play.",
+        "Look for the hidden video at around 0:56. It shows three objects, the one in the middle being an equality sign.",
+        "The left object is Eni wearing headphones, the right object an image.",
+        "The headphones indicate that you have to continue by editing the audio track of the video.",
+        "Eni usually has no nose.",
+        "The Eni hidden in the video does have a nose of a particular shape.",
+        "Eni’s nose is a minus sign.",
+        "Eni can hear different sounds in the left and right headphones.",
+        "The minus sign indicates that you have to subtract the sound Eni can hear in one ear from the sound Eni hears in the other ear.",
+        "Subtract the right audio channel from the left audio channel.",
+        "The “equals image” part of the hidden video indicates that you have to look for an image in the resulting audio.",
+        "Look at the audio spectrogram after subtracting (again at the time when the lyrics “enione can dream in technicolor” play in the original file).",
+        "You should see a pile of some kind, a plus sign, and the pictogram for man in the spectrogram.",
+        "The pile represents sand.",
+        "The spectrogram contains a “Classic” riddle with the solution “sandman”.",
+        "The riddle title and the episodes are important to find the final answer.",
+        "You first have to look for a TV series.",
+        "The TV series is the 2022–2025 series “The Sandman”.",
+        "Finally, find the right episode.",
+        "The right episode is the one where the video contains all the hidden information.",
+        "At 0:56, the text “EPISODE 3” is displayed.",
+        "The solution is the name of the third episode of “The Sandman”."
+      ];
+
+      const form = document.querySelector("#answer-form");
+      const answerInput = document.querySelector("#answer");
+      const feedback = document.querySelector("#feedback");
+      const historyList = document.querySelector("#history-list");
+      const showHint = document.querySelector("#show-hint");
+      const previousHint = document.querySelector("#previous-hint");
+      const nextHint = document.querySelector("#next-hint");
+      const hintBox = document.querySelector("#hint-box");
+      const hintCount = document.querySelector("#hint-count");
+      const hintText = document.querySelector("#hint-text");
+      let currentHint = -1;
+      let history = loadHistory();
+
+      function normalize(value) {
+        return value
+          .normalize("NFKD")
+          .toLowerCase()
+          .replace(/[’']/g, "")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim()
+          .replace(/\s+/g, " ");
+      }
+
+      function isOnRightTrack(value) {
+        const compact = normalize(value);
+        const closeAnswers = new Set([
+          "technicolor", "rgb", "rgb channels", "red green blue channels",
+          "blue channel", "separate rgb channels", "split rgb channels",
+          "subtract audio", "subtract audio channels", "audio subtraction",
+          "left minus right", "left channel minus right channel",
+          "subtract right channel from left channel", "audio spectrogram",
+          "spectrogram", "sound spectrogram", "sandman", "sand man",
+          "sand plus man", "the sandman", "the sandman tv series",
+          "the sandman series", "episode 3", "episode three", "third episode"
+        ]);
+        return closeAnswers.has(compact);
+      }
+
+      function loadHistory() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(historyKey));
+          return Array.isArray(saved) ? saved.slice(0, maxHistory) : [];
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function saveHistory() {
+        try { localStorage.setItem(historyKey, JSON.stringify(history)); } catch (_) {}
+      }
+
+      function timeAgo(timestamp) {
+        const elapsed = Math.max(0, Date.now() - timestamp);
+        const seconds = Math.floor(elapsed / 1000);
+        if (seconds < 60) return `${seconds} second${seconds === 1 ? "" : "s"} ago`;
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+        return new Date(timestamp).toLocaleString();
+      }
+
+      function renderHistory() {
+        historyList.replaceChildren();
+        if (!history.length) {
+          const item = document.createElement("li");
+          item.className = "empty";
+          item.textContent = "No answers submitted yet.";
+          historyList.append(item);
+          return;
+        }
+
+        history.forEach(entry => {
+          const item = document.createElement("li");
+          const answer = document.createElement("span");
+          const time = document.createElement("time");
+          answer.className = "history-answer";
+          answer.textContent = entry.answer;
+          time.dateTime = new Date(entry.time).toISOString();
+          time.textContent = timeAgo(entry.time);
+          item.append(answer, time);
+          historyList.append(item);
+        });
+      }
+
+      function setFeedback(kind, message, withBulb = false) {
+        feedback.className = `feedback ${kind}`;
+        feedback.replaceChildren();
+        if (withBulb) {
+          const icon = document.createElement("span");
+          icon.className = "material-icons-round";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = "lightbulb";
+          feedback.append(icon);
+        }
+        feedback.append(document.createTextNode(message));
+      }
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        const rawAnswer = answerInput.value;
+        const normalized = normalize(rawAnswer);
+        if (!normalized) return;
+
+        history.unshift({ answer: rawAnswer.trim(), time: Date.now() });
+        history = history.slice(0, maxHistory);
+        saveHistory();
+        renderHistory();
+
+        if (normalized === solution) {
+          setFeedback("correct", "Correct — well done!");
+        } else if (isOnRightTrack(normalized)) {
+          setFeedback("close", "Not the final answer, but you’re on the right track!", true);
+        } else {
+          setFeedback("wrong", "That is not the solution. Keep puzzling!");
+        }
+
+        answerInput.select();
+      });
+
+      function renderHint() {
+        hintBox.hidden = false;
+        hintCount.textContent = `Hint ${currentHint + 1} of ${hints.length}`;
+        hintText.innerHTML = hints[currentHint];
+        showHint.hidden = true;
+        previousHint.hidden = false;
+        nextHint.hidden = false;
+        previousHint.disabled = currentHint === 0;
+        nextHint.disabled = currentHint === hints.length - 1;
+        nextHint.textContent = currentHint === hints.length - 1 ? "No more hints" : "Show next hint";
+      }
+
+      showHint.addEventListener("click", () => {
+        currentHint = 0;
+        renderHint();
+      });
+
+      previousHint.addEventListener("click", () => {
+        if (currentHint > 0) {
+          currentHint -= 1;
+          renderHint();
+        }
+      });
+
+      nextHint.addEventListener("click", () => {
+        if (currentHint < hints.length - 1) {
+          currentHint += 1;
+          renderHint();
+        }
+      });
+
+      renderHistory();
+      setInterval(renderHistory, 1000);
+    })();
+  </script>
+</body>
+</html>
